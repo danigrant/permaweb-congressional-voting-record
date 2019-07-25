@@ -11,6 +11,7 @@
 *  1. why does it still upload xml with original stylesheet link?
 *  2. why does the first txn happen 4 times?
 *  3. build a ui that queries arweave with arql and shows a list of txns from this project
+*  4. get historical votes
 */
 
 let fetch = require('node-fetch')
@@ -81,7 +82,7 @@ async function pushToArweave(uri) {
   }, key);
 
   // tag the transaction so it can be found later
-  transaction.addTag('dani_project', 'congressional_archive')
+  transaction.addTag('dani_project', 'congressional_archive') // later change this to something else to discern test from prod
 
   // sign the transaction
   await arweave.transactions.sign(transaction, key);
