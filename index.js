@@ -6,6 +6,13 @@
 *
 */
 
+/*
+*  TODO:
+*  1. why does it still upload xml with original stylesheet link?
+*  2. why does the first txn happen 4 times?
+*  3. build a ui that queries arweave with arql and shows a list of txns from this project
+*/
+
 let fetch = require('node-fetch')
 const Arweave = require('arweave/node');
 const { key } = require('./arweave-wallet')
@@ -73,6 +80,9 @@ async function pushToArweave(uri) {
     data: Buffer.from(data, 'utf8')
   }, key);
 
+  // tag the transaction so it can be found later
+  transaction.addTag('dani_project', 'congressional_archive')
+
   // sign the transaction
   await arweave.transactions.sign(transaction, key);
 
@@ -81,7 +91,7 @@ async function pushToArweave(uri) {
 
   // return transaction id. data will be hosted at arweave.net/transaction-id
   let transactionId = JSON.parse(response.config.data)["id"]
-  console.log(transactionId);
+  console.log(`https://arweave.net/${transactionId}`);
   return transactionId
 }
 
@@ -107,7 +117,3 @@ async function replaceStyleSheet(originalXML) {
     return originalXML
   }
 }
-
-// next up try extending time period so we do multiple votes
-// make sure senate works
-// push txn id to central repo (or maybe use custom key for this?) or maybe can tag it so that arql surfaes them all together
