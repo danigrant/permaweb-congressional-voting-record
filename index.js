@@ -45,8 +45,6 @@ async function newVoteLast24H() {
   for (let i = 0; i < json["results"]["votes"].length; i++) {
     let voteDate = `${json["results"]["votes"][i]["date"]} ${json["results"]["votes"][i]["time"]}`
 
-    console.log(`vote date is ${voteDate}, ${(new Date() - new Date(voteDate)) / 1000 / 60 / 60 / 24}`);
-
     // see if vote date is within 24 hours of current date
     // the mathemagics here with /1000/60/60/24 is because the date subtraction returns time in milliseconds
     // and we want time returned in days so we do 1000 milliseconds * 60 seconds * 60 minutes * 24 hrs
