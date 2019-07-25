@@ -34,7 +34,7 @@ void async function main() {
   // if any votes happened in the last 24 hours, push the official voting page to Arweave
   if (votesLast24H) {
     for (let i = 0; i < votesLast24H.length; i++) {
-      pushToArweave(votesLast24H[i])
+      await pushToArweave(votesLast24H[i])
     }
   }
 }()
@@ -91,7 +91,7 @@ async function pushToArweave(uri) {
 
   // return transaction id. data will be hosted at arweave.net/transaction-id
   let transactionId = JSON.parse(response.config.data)["id"]
-  console.log(`https://arweave.net/${transactionId}`);
+  console.log(response.status, response.data, `https://arweave.net/${transactionId}`);
   return transactionId
 }
 
