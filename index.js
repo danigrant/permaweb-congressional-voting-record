@@ -38,12 +38,14 @@ async function newVoteLast24H() {
   let res = await fetch('https://api.propublica.org/congress/v1/both/votes/recent.json', { headers: { 'X-API-Key': PROPUBLICA_KEY }})
   let json = await res.json()
 
+  // an array of uris of votes that happened in last 24 hours
+  let votesLast24H = []
+
   // check if any of the recent votes happened in the last 24 hours and if yes, push it to votesLast24H[]
   for (let i = 0; i < json["results"]["votes"].length; i++) {
     let voteDate = `${json["results"]["votes"][i]["date"]} ${json["results"]["votes"][i]["time"]}`
 
-    // an array of uris of votes that happened in last 24 hours
-    let votesLast24H = []
+    console.log(`vote date is ${voteDate}, ${(new Date() - new Date(voteDate)) / 1000 / 60 / 60 / 24}`);
 
     // see if vote date is within 24 hours of current date
     // the mathemagics here with /1000/60/60/24 is because the date subtraction returns time in milliseconds
@@ -51,11 +53,15 @@ async function newVoteLast24H() {
     if ((new Date() - new Date(voteDate)) / 1000 / 60 / 60 / 24) {
       votesLast24H.push(json["results"]["votes"][i]["url"])
     }
-    return votesLast24H
   }
 
   // if no votes within last 24 hours, return false
-  return false
+  // otherwise return the array of votes
+  if (votesLast24H.length > 0) {
+    return votesLast24H
+  } else {
+    return false
+  }
 }
 
 async function pushToArweave(uri) {
@@ -76,7 +82,9 @@ async function pushToArweave(uri) {
   const response = await arweave.transactions.post(transaction);
 
   // return transaction id. data will be hosted at arweave.net/transaction-id
-  return JSON.parse(response.config.data)["id"]
+  let transactionId = JSON.parse(response.config.data)["id"]
+  console.log(transactionId);
+  return transactionId
 }
 
 async function getSourceFromWebPage(uri) {
@@ -84,6 +92,7 @@ async function getSourceFromWebPage(uri) {
   return await res.text()
 }
 
+// if this is xml because it's a house vote we need to do some stylesheet maneuvering
 // parse the xml to grab the stylesheet link
 // upload the stylesheet to Arweave
 // then replace the stylesheet link with the arweave link so it doesn't 404
@@ -100,3 +109,7 @@ async function replaceStyleSheet(originalXML) {
     return originalXML
   }
 }
+
+// next up try extending time period so we do multiple votes
+// make sure senate works
+// push txn id to central repo (or maybe use custom key for this?) or maybe can tag it so that arql surfaes them all together
