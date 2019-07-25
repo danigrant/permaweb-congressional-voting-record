@@ -27,7 +27,6 @@ void async function main() {
   // if any votes happened in the last 24 hours, push the official voting page to Arweave
   if (votesLast24H) {
     for (let i = 0; i < votesLast24H.length; i++) {
-      console.log(votesLast24H[i])
       pushToArweave(votesLast24H[i])
     }
   }
@@ -63,6 +62,8 @@ async function pushToArweave(uri) {
   // fetch the source code of the page to archive
   let data = await getSourceFromWebPage(uri)
 
+  data = await replaceStyleSheet(data)
+
   // create transaction
   let transaction = await arweave.createTransaction({
     data: Buffer.from(data, 'utf8')
@@ -74,10 +75,28 @@ async function pushToArweave(uri) {
   // then send it to arweave
   const response = await arweave.transactions.post(transaction);
 
-  console.log(response.status, response.data);
+  // return transaction id. data will be hosted at arweave.net/transaction-id
+  return JSON.parse(response.config.data)["id"]
 }
 
 async function getSourceFromWebPage(uri) {
   let res = await fetch(uri)
   return await res.text()
+}
+
+// parse the xml to grab the stylesheet link
+// upload the stylesheet to Arweave
+// then replace the stylesheet link with the arweave link so it doesn't 404
+// return the updated stylesheet
+async function replaceStyleSheet(originalXML) {
+  try {
+    let uri = originalXML.split('?xml-stylesheet')[1].split('href=')[1].split('"')[1]
+    let transactionId = await pushToArweave(uri)
+
+    // swap the stylesheet link in the original xml with the new arweave link
+    let newXML = originalXML.replace(uri, `arweave.net/${transactionId}`)
+    return newXML
+  } catch (error) {
+    return originalXML
+  }
 }
