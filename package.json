@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "arweave": "^1.4.0",
+    "arweave": "^1.13.7",
     "dotenv": "^8.0.0",
     "node-fetch": "^2.6.0"
   }
